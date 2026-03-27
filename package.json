@@ -1,5 +1,5 @@
 {
-  "name": "P6-front-end-dashboard",
+  "name": "p6-backend-dashboard",
   "version": "1.0.0",
   "description": "Backend for the 6th project of the new path Front-end Developper",
   "main": "index/app.js",
@@ -7,6 +7,7 @@
   "author": "atoulmet <alexia.toulmet@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "nodemon": "^2.0.4",
     "prettier": "^3.5.3"
   },
@@ -18,7 +19,8 @@
     "jsonwebtoken": "^9.0.2"
   },
   "scripts": {
-    "dev": "node_modules/.bin/nodemon app/index.js",
-    "start": "node app/index.js"
+    "dev": "concurrently \"npm run server\" \"npm run dev --prefix frontend\"",
+    "start": "node app/index.js",
+    "server": "npx nodemon app/index.js"
   }
 }
