@@ -27,42 +27,49 @@ export interface RunningSession {
   caloriesBurned: number
 }
 
+const getMonday = (date: Date) => {
+  const d = new Date(date)
+  const dayOfWeek = d.getDay()
+  d.setDate(d.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+const formatISO = (date: Date) => date.toISOString().split('T')[0]
+
 const useUserData = () => {
   const { user } = useAppContext()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [stats, setStats] = useState<UserStats | null>(null)
-  const [sessions, setSessions] = useState<RunningSession[]>([])
+  const [allSessions, setAllSessions] = useState<RunningSession[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user?.token) return
 
+    const headers = { Authorization: `Bearer ${user.token}` }
+
+    // Dates de référence : 4 semaines (lundi il y a 3 semaines → dimanche courant)
+    const monday = getMonday(new Date())
+    const fourWeeksAgo = new Date(monday)
+    fourWeeksAgo.setDate(monday.getDate() - 21)
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+
     const fetchUserInfo = async () => {
-      const res = await fetch('http://localhost:8000/api/user-info', {
-        headers: { Authorization: `Bearer ${user.token}` },
-      })
+      const res = await fetch('http://localhost:8000/api/user-info', { headers })
       const data = await res.json()
       setProfile(data.profile)
       setStats(data.statistics)
     }
 
     const fetchActivity = async () => {
-      const now = new Date()
-      const dayOfWeek = now.getDay()
-      const monday = new Date(now)
-      monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
-      const sunday = new Date(monday)
-      sunday.setDate(monday.getDate() + 6)
-
-      const startWeek = monday.toISOString().split('T')[0]
-      const endWeek = sunday.toISOString().split('T')[0]
-
       const res = await fetch(
-        `http://localhost:8000/api/user-activity?startWeek=${startWeek}&endWeek=${endWeek}`,
-        { headers: { Authorization: `Bearer ${user.token}` } }
+        `http://localhost:8000/api/user-activity?startWeek=${formatISO(fourWeeksAgo)}&endWeek=${formatISO(sunday)}`,
+        { headers }
       )
       const data = await res.json()
-      setSessions(data)
+      setAllSessions(data)
     }
 
     Promise.all([fetchUserInfo(), fetchActivity()]).then(() => {
@@ -70,7 +77,11 @@ const useUserData = () => {
     })
   }, [user?.token])
 
-  return { profile, stats, sessions, loading }
+  // Semaine courante = filtrée depuis allSessions
+  const currentWeekStart = formatISO(getMonday(new Date()))
+  const sessions = allSessions.filter((s) => s.date >= currentWeekStart)
+
+  return { profile, stats, sessions, monthSessions: allSessions, loading }
 }
 
 export default useUserData

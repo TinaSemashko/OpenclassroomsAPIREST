@@ -2,6 +2,7 @@
 
 import useUserData from '@/lib/useUserData'
 import Navbar from '@/components/Navbar/Navbar'
+import WeeklyDistanceChart from '@/components/WeeklyDistanceChart/WeeklyDistanceChart'
 import {
   PageWrapper,
   Content,
@@ -27,7 +28,7 @@ import {
 } from './page.styled'
 
 const DashboardPage = () => {
-  const { profile, stats, sessions, loading } = useUserData()
+  const { profile, stats, sessions, monthSessions, loading } = useUserData()
 
   const weekDistance = sessions
     .reduce((sum, s) => sum + s.distance, 0)
@@ -85,8 +86,7 @@ const DashboardPage = () => {
         <SectionTitle>Vos dernières performances</SectionTitle>
         <ChartsRow>
           <ChartCard>
-            {/* BarChart km par semaine — prochaine étape */}
-            <p>BarChart placeholder</p>
+            <WeeklyDistanceChart sessions={monthSessions} />
           </ChartCard>
           <ChartCard>
             {/* ComposedChart BPM — prochaine étape */}
