@@ -3,6 +3,9 @@
 import useUserData from '@/lib/useUserData'
 import Navbar from '@/components/Navbar/Navbar'
 import WeeklyDistanceChart from '@/components/WeeklyDistanceChart/WeeklyDistanceChart'
+import BpmChart from '@/components/BpmChart/BpmChart'
+import SessionGoalChart from '@/components/SessionGoalChart/SessionGoalChart'
+import Footer from '@/components/Footer/Footer'
 import {
   PageWrapper,
   Content,
@@ -10,6 +13,7 @@ import {
   BannerText,
   BannerButton,
   ProfileCard,
+  AvatarWrapper,
   ProfileAvatar,
   ProfileInfo,
   ProfileName,
@@ -23,8 +27,11 @@ import {
   ChartCard,
   WeekRow,
   WeekCard,
-  StatValue,
+  WeekStatsColumn,
+  StatCard,
   StatLabel,
+  StatValue,
+  StatUnit,
 } from './page.styled'
 
 const DashboardPage = () => {
@@ -45,6 +52,18 @@ const DashboardPage = () => {
     })
   }
 
+  const getMonday = (d: Date) => {
+    const date = new Date(d)
+    const day = date.getDay()
+    date.setDate(date.getDate() - (day === 0 ? 6 : day - 1))
+    return date
+  }
+  const monday = getMonday(new Date())
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  const formatShort = (d: Date) =>
+    d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
   if (loading || !profile || !stats) {
     return null
   }
@@ -64,10 +83,12 @@ const DashboardPage = () => {
 
         {/* ---- Carte profil ---- */}
         <ProfileCard>
-          <ProfileAvatar
-            src={profile.profilePicture}
-            alt={`${profile.firstName} ${profile.lastName}`}
-          />
+          <AvatarWrapper>
+            <ProfileAvatar
+              src={profile.profilePicture}
+              alt={`${profile.firstName} ${profile.lastName}`}
+            />
+          </AvatarWrapper>
           <ProfileInfo>
             <ProfileName>
               {profile.firstName} {profile.lastName}
@@ -89,39 +110,38 @@ const DashboardPage = () => {
             <WeeklyDistanceChart sessions={monthSessions} />
           </ChartCard>
           <ChartCard>
-            {/* ComposedChart BPM — prochaine étape */}
-            <p>BPM Chart placeholder</p>
+            <BpmChart sessions={monthSessions} />
           </ChartCard>
         </ChartsRow>
 
         {/* ---- Cette semaine ---- */}
         <SectionTitle>Cette semaine</SectionTitle>
         <SectionSubtitle>
-          {sessions.length > 0
-            ? `Du ${sessions[0].date} au ${sessions[sessions.length - 1].date}`
-            : 'Aucune session cette semaine'}
+          Du {formatShort(monday)} au {formatShort(sunday)}
         </SectionSubtitle>
         <WeekRow>
           <WeekCard>
-            {/* PieChart donut — prochaine étape */}
-            <StatValue sx={{ color: 'primary.main' }}>
-              x{weekSessions}
-            </StatValue>
-            <StatLabel>sur objectif de 6</StatLabel>
-            <StatLabel>Courses hebdomadaire réalisées</StatLabel>
+            <SessionGoalChart completed={weekSessions} goal={6} />
           </WeekCard>
-          <WeekCard>
-            <StatLabel>Durée d&apos;activité</StatLabel>
-            <StatValue sx={{ color: 'primary.main' }}>{weekDuration}</StatValue>
-            <StatLabel>minutes</StatLabel>
-          </WeekCard>
-          <WeekCard>
-            <StatLabel>Distance</StatLabel>
-            <StatValue sx={{ color: 'error.main' }}>{weekDistance}</StatValue>
-            <StatLabel>kilomètres</StatLabel>
-          </WeekCard>
+          <WeekStatsColumn>
+            <StatCard>
+              <StatLabel>Durée d&apos;activité</StatLabel>
+              <div>
+                <StatValue sx={{ color: 'primary.main' }}>{weekDuration}</StatValue>
+                <StatUnit>minutes</StatUnit>
+              </div>
+            </StatCard>
+            <StatCard>
+              <StatLabel>Distance</StatLabel>
+              <div>
+                <StatValue sx={{ color: 'error.main' }}>{weekDistance}</StatValue>
+                <StatUnit>kilomètres</StatUnit>
+              </div>
+            </StatCard>
+          </WeekStatsColumn>
         </WeekRow>
       </Content>
+      <Footer />
     </PageWrapper>
   )
 }

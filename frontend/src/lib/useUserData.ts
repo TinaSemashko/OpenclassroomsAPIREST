@@ -8,6 +8,7 @@ export interface UserProfile {
   lastName: string
   createdAt: string
   age: number
+  gender: string
   weight: number
   height: number
   profilePicture: string
@@ -17,6 +18,7 @@ export interface UserStats {
   totalDistance: string
   totalSessions: number
   totalDuration: number
+  totalCalories: number
 }
 
 export interface RunningSession {
@@ -49,10 +51,9 @@ const useUserData = () => {
 
     const headers = { Authorization: `Bearer ${user.token}` }
 
-    // Dates de référence : 4 semaines (lundi il y a 3 semaines → dimanche courant)
+    // Dates de référence : tout l'historique → dimanche courant
     const monday = getMonday(new Date())
-    const fourWeeksAgo = new Date(monday)
-    fourWeeksAgo.setDate(monday.getDate() - 21)
+    const historyStart = new Date('2024-01-01')
     const sunday = new Date(monday)
     sunday.setDate(monday.getDate() + 6)
 
@@ -65,7 +66,7 @@ const useUserData = () => {
 
     const fetchActivity = async () => {
       const res = await fetch(
-        `http://localhost:8000/api/user-activity?startWeek=${formatISO(fourWeeksAgo)}&endWeek=${formatISO(sunday)}`,
+        `http://localhost:8000/api/user-activity?startWeek=${formatISO(historyStart)}&endWeek=${formatISO(sunday)}`,
         { headers }
       )
       const data = await res.json()

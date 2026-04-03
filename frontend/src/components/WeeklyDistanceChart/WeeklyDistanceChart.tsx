@@ -1,9 +1,10 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   Tooltip,
@@ -11,9 +12,14 @@ import {
   Legend,
 } from 'recharts'
 import { Typography } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
 import type { RunningSession } from '@/lib/useUserData'
-import { ChartHeader, ChartTitle, ChartSubtitle } from './WeeklyDistanceChart.styled'
+import {
+  ChartHeader,
+  ChartTitle,
+  ChartSubtitle,
+  DateNav,
+  DateNavArrow,
+} from './WeeklyDistanceChart.styled'
 
 interface WeeklyDistanceChartProps {
   sessions: RunningSession[]
@@ -26,6 +32,8 @@ interface WeekData {
   endDate: string
 }
 
+const WINDOW = 4
+
 const getMonday = (date: Date) => {
   const d = new Date(date)
   const dayOfWeek = d.getDay()
@@ -37,11 +45,15 @@ const getMonday = (date: Date) => {
 const formatShortDate = (date: Date) =>
   date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
 
-const WeeklyDistanceChart = ({ sessions }: WeeklyDistanceChartProps) => {
-  const theme = useTheme()
+const formatLongDate = (date: Date) =>
+  date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
 
-  const { weeklyData, average } = useMemo(() => {
-    // Regroupe les sessions par semaine (lundi)
+const WeeklyDistanceChart = ({ sessions }: WeeklyDistanceChartProps) => {
+  const [offset, setOffset] = useState(0)
+  const [hovered, setHovered] = useState(false)
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+
+  const allWeeks = useMemo(() => {
     const weeks = new Map<string, { km: number; start: Date; end: Date }>()
 
     sessions.forEach((s) => {
@@ -57,31 +69,35 @@ const WeeklyDistanceChart = ({ sessions }: WeeklyDistanceChartProps) => {
       weeks.get(key)!.km += s.distance
     })
 
-    // Trie par date et prend les 4 dernières semaines
-    const sorted = [...weeks.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-4)
-
-    const data: WeekData[] = sorted.map(([, week], i) => ({
-      name: `S${i + 1}`,
-      km: Math.round(week.km * 10) / 10,
-      startDate: formatShortDate(week.start),
-      endDate: formatShortDate(week.end),
-    }))
-
-    const avg =
-      data.length > 0
-        ? Math.round(data.reduce((sum, d) => sum + d.km, 0) / data.length)
-        : 0
-
-    return { weeklyData: data, average: avg }
+    return [...weeks.entries()].sort(([a], [b]) => a.localeCompare(b))
   }, [sessions])
 
-  if (weeklyData.length === 0) {
+  const total = allWeeks.length
+  const endIdx = total - offset
+  const startIdx = Math.max(0, endIdx - WINDOW)
+  const visibleWeeks = allWeeks.slice(startIdx, endIdx)
+
+  const canPrev = startIdx > 0
+  const canNext = offset > 0
+
+  const weeklyData: WeekData[] = visibleWeeks.map(([, week], i) => ({
+    name: `S${i + 1}`,
+    km: Math.round(week.km * 10) / 10,
+    startDate: formatShortDate(week.start),
+    endDate: formatShortDate(week.end),
+  }))
+
+  const average =
+    weeklyData.length > 0
+      ? Math.round(weeklyData.reduce((sum, d) => sum + d.km, 0) / weeklyData.length)
+      : 0
+
+  if (total === 0) {
     return <Typography color="text.secondary">Aucune donnée disponible</Typography>
   }
 
-  const dateRange = `${weeklyData[0].startDate} - ${weeklyData[weeklyData.length - 1].endDate}`
+  const rangeStart = visibleWeeks[0][1].start
+  const rangeEnd = visibleWeeks[visibleWeeks.length - 1][1].end
 
   return (
     <>
@@ -90,15 +106,42 @@ const WeeklyDistanceChart = ({ sessions }: WeeklyDistanceChartProps) => {
           <ChartTitle>{average}km en moyenne</ChartTitle>
           <ChartSubtitle>Total des kilomètres 4 dernières semaines</ChartSubtitle>
         </div>
-        <ChartSubtitle>{dateRange}</ChartSubtitle>
+        <DateNav>
+          <DateNavArrow
+            onClick={() => canPrev && setOffset((o) => o + 1)}
+            style={{ opacity: canPrev ? 1 : 0.3, cursor: canPrev ? 'pointer' : 'default' }}
+          >
+            &lt;
+          </DateNavArrow>
+          {formatLongDate(rangeStart)} - {formatLongDate(rangeEnd)}
+          <DateNavArrow
+            onClick={() => canNext && setOffset((o) => o - 1)}
+            style={{ opacity: canNext ? 1 : 0.3, cursor: canNext ? 'pointer' : 'default' }}
+          >
+            &gt;
+          </DateNavArrow>
+        </DateNav>
       </ChartHeader>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
       <ResponsiveContainer width="100%" height={250}>
-        <BarChart data={weeklyData}>
+        <BarChart
+          data={weeklyData}
+          onMouseMove={(state) => {
+            if (state?.activeTooltipIndex !== undefined) {
+              setActiveIndex(Number(state.activeTooltipIndex))
+            }
+          }}
+          onMouseLeave={() => setActiveIndex(null)}
+        >
           <XAxis dataKey="name" tickLine={false} axisLine={false} />
           <YAxis tickLine={false} axisLine={false} />
           <Tooltip
-            formatter={(value: number) => [`${value} km`, 'Distance']}
-            labelFormatter={(_label: string, payload: { payload?: WeekData }[]) => {
+            cursor={false}
+            formatter={(value) => [`${value} km`, 'Distance']}
+            labelFormatter={(_label, payload) => {
               if (payload?.[0]?.payload) {
                 const d = payload[0].payload
                 return `${d.startDate} au ${d.endDate}`
@@ -121,12 +164,19 @@ const WeeklyDistanceChart = ({ sessions }: WeeklyDistanceChartProps) => {
           />
           <Bar
             dataKey="km"
-            fill={theme.palette.primary.main}
             radius={[4, 4, 0, 0]}
-            barSize={40}
-          />
+            barSize={20}
+          >
+            {weeklyData.map((_, i) => {
+              let fill = '#b3b3e6'
+              if (hovered) fill = '#6666cc'
+              if (activeIndex === i) fill = '#0000ff'
+              return <Cell key={i} fill={fill} />
+            })}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
+      </div>
     </>
   )
 }

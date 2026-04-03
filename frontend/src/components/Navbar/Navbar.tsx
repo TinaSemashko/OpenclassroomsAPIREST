@@ -1,10 +1,12 @@
 'use client'
 
 import useAuth from '@/lib/useAuth'
+import LogoIcon from './LogoIcon'
 import {
   StyledAppBar,
   StyledToolbar,
-  Logo,
+  LogoWrapper,
+  LogoText,
   NavLinks,
   NavLink,
   LogoutLink,
@@ -16,14 +18,21 @@ const Navbar = () => {
   return (
     <StyledAppBar position="static">
       <StyledToolbar>
-        <Logo>
-          <span>M</span>SPORTSEE
-        </Logo>
+        <LogoWrapper>
+          <LogoIcon />
+          <LogoText>SPORTSEE</LogoText>
+        </LogoWrapper>
         <NavLinks>
           <NavLink href="/dashboard">Dashboard</NavLink>
           <NavLink href="#">Coach AI</NavLink>
           <NavLink href="/profil">Mon profil</NavLink>
-          <LogoutLink href="#" onClick={logout}>
+          <LogoutLink
+            href="#"
+            onClick={(e: React.MouseEvent) => {
+              e.preventDefault()
+              logout()
+            }}
+          >
             Se déconnecter
           </LogoutLink>
         </NavLinks>

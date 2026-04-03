@@ -14,6 +14,9 @@ export const Content = styled(Box)`
   max-width: 1200px;
   margin: 0 auto;
   padding: 32px 40px;
+  ${({ theme }) => theme.breakpoints.down('sm')} {
+    padding: 24px 16px;
+  }
 `
 
 // ---- Banner ----
@@ -26,6 +29,11 @@ export const Banner = styled(Box)`
   border-radius: ${({ theme }) => theme.shape.borderRadius}px;
   padding: 16px 24px;
   margin-bottom: 32px;
+  gap: 16px;
+  ${({ theme }) => theme.breakpoints.down('sm')} {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 `
 
 export const BannerText = styled(Typography)`
@@ -41,8 +49,10 @@ export const BannerButton = styled(Button)`
   padding: 8px 20px;
   font-size: 14px;
   white-space: nowrap;
+  transition: background-color 0.2s ease, transform 0.2s ease;
   &:hover {
     background-color: ${({ theme }) => theme.palette.error.dark};
+    transform: translateY(-1px);
   }
 `
 
@@ -57,13 +67,29 @@ export const ProfileCard = styled(Box)`
   padding: 24px 32px;
   margin-bottom: 40px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  ${({ theme }) => theme.breakpoints.down('sm')} {
+    flex-direction: column;
+    text-align: center;
+    padding: 24px 16px;
+  }
 `
 
-export const ProfileAvatar = styled('img')`
+export const AvatarWrapper = styled('div')`
   width: 64px;
   height: 64px;
   border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+`
+
+export const ProfileAvatar = styled('img')`
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+  &:hover {
+    transform: scale(1.15);
+  }
 `
 
 export const ProfileInfo = styled(Box)`
@@ -154,12 +180,35 @@ export const WeekCard = styled(Box)`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 `
 
-export const StatValue = styled(Typography)`
-  font-size: 32px;
-  font-weight: 700;
+export const WeekStatsColumn = styled(Box)`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`
+
+export const StatCard = styled(Box)`
+  background-color: ${({ theme }) => theme.palette.background.paper};
+  border-radius: ${({ theme }) => theme.shape.borderRadius}px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 `
 
 export const StatLabel = styled(Typography)`
   font-size: 14px;
   color: ${({ theme }) => theme.palette.text.secondary};
+`
+
+export const StatValue = styled(Typography)`
+  font-size: 32px;
+  font-weight: 700;
+  display: inline;
+`
+
+export const StatUnit = styled(Typography)`
+  font-size: 16px;
+  font-weight: 400;
+  color: ${({ theme }) => theme.palette.text.secondary};
+  display: inline;
+  margin-left: 4px;
 `

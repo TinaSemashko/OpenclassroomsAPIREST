@@ -3,7 +3,8 @@ import type { NextRequest } from 'next/server'
 
 export function proxy(request: NextRequest) {
   const token = request.cookies.get('token')
-  const isProtected = request.nextUrl.pathname.startsWith('/dashboard')
+  const path = request.nextUrl.pathname
+  const isProtected = path.startsWith('/dashboard') || path.startsWith('/profil')
 
   if (isProtected && !token) {
     return NextResponse.redirect(new URL('/login', request.url))
@@ -13,5 +14,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/dashboard/:path*', '/profil/:path*'],
 }

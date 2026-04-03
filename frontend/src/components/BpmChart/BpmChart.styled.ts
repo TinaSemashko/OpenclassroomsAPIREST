@@ -13,7 +13,7 @@ export const ChartHeader = styled('div')`
 export const ChartTitle = styled(Typography)`
   font-size: 18px;
   font-weight: 700;
-  color: ${({ theme }) => theme.palette.primary.main};
+  color: ${({ theme }) => theme.palette.error.main};
 `
 
 export const ChartSubtitle = styled(Typography)`
@@ -41,7 +41,7 @@ export const DateNavArrow = styled('span')`
   cursor: pointer;
   transition: border-color 0.2s;
   &:hover {
-    border-color: ${({ theme }) => theme.palette.primary.main};
-    color: ${({ theme }) => theme.palette.primary.main};
+    border-color: ${({ theme }) => theme.palette.error.main};
+    color: ${({ theme }) => theme.palette.error.main};
   }
 `

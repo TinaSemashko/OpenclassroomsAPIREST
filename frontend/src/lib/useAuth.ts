@@ -30,6 +30,7 @@ const useAuth = () => {
   }
 
   const logout = () => {
+    document.cookie = 'token=; path=/; max-age=0'
     setUser(null)
     router.push('/login')
   }

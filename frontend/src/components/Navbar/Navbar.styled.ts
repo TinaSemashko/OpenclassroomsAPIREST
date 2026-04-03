@@ -15,15 +15,17 @@ export const StyledToolbar = styled(Toolbar)`
   padding: 8px 40px;
 `
 
-export const Logo = styled(Typography)`
+export const LogoWrapper = styled('div')`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`
+
+export const LogoText = styled(Typography)`
   font-size: 22px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: ${({ theme }) => theme.palette.text.primary};
-
-  span {
-    color: ${({ theme }) => theme.palette.error.main};
-  }
+  color: ${({ theme }) => theme.palette.primary.main};
 `
 
 export const NavLinks = styled(Toolbar)`
