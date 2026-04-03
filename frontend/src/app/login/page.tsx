@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Typography } from '@mui/material'
-import { useAppContext } from '@/context/appContext'
+import useAuth from '@/lib/useAuth'
 import {
   PageWrapper,
   LeftPanel,
@@ -20,34 +19,16 @@ import {
 const LoginPage = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const { setUser } = useAppContext()
-  const router = useRouter()
+  const { login, error } = useAuth()
 
-  const handleSubmit = async () => {
-    setError('')
-    try {
-      const res = await fetch('http://localhost:8000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.message || 'Erreur de connexion')
-        return
-      }
-      setUser({ userId: data.userId, token: data.token })
-      router.push('/dashboard')
-    } catch {
-      setError('Erreur serveur, veuillez réessayer')
-    }
+  const handleSubmit = () => {
+    login(username, password)
   }
 
   return (
     <PageWrapper>
       <LeftPanel>
-        <Logo>⬛ SPORTSEE</Logo>
+        <Logo>SPORTSEE</Logo>
         <FormCard>
           <Title>Transformez vos stats en résultats</Title>
           <Typography variant="h6" sx={{ mb: 3 }}>Se connecter</Typography>

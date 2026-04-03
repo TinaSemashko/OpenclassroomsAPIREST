@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useAppContext } from '@/context/appContext'
+import useUserData from '@/lib/useUserData'
 import Navbar from '@/components/Navbar/Navbar'
 import {
   PageWrapper,
@@ -27,73 +26,9 @@ import {
   StatLabel,
 } from './page.styled'
 
-interface UserProfile {
-  firstName: string
-  lastName: string
-  createdAt: string
-  age: number
-  weight: number
-  height: number
-  profilePicture: string
-}
-
-interface UserStats {
-  totalDistance: string
-  totalSessions: number
-  totalDuration: number
-}
-
-interface RunningSession {
-  date: string
-  distance: number
-  duration: number
-  heartRate: { min: number; max: number; average: number }
-  caloriesBurned: number
-}
-
 const DashboardPage = () => {
-  const { user } = useAppContext()
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [stats, setStats] = useState<UserStats | null>(null)
-  const [sessions, setSessions] = useState<RunningSession[]>([])
+  const { profile, stats, sessions, loading } = useUserData()
 
-  useEffect(() => {
-    if (!user?.token) return
-
-    const fetchUserInfo = async () => {
-      const res = await fetch('http://localhost:8000/api/user-info', {
-        headers: { Authorization: `Bearer ${user.token}` },
-      })
-      const data = await res.json()
-      setProfile(data.profile)
-      setStats(data.statistics)
-    }
-
-    const fetchActivity = async () => {
-      // Calcule la semaine courante (lundi -> dimanche)
-      const now = new Date()
-      const dayOfWeek = now.getDay()
-      const monday = new Date(now)
-      monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
-      const sunday = new Date(monday)
-      sunday.setDate(monday.getDate() + 6)
-
-      const startWeek = monday.toISOString().split('T')[0]
-      const endWeek = sunday.toISOString().split('T')[0]
-
-      const res = await fetch(
-        `http://localhost:8000/api/user-activity?startWeek=${startWeek}&endWeek=${endWeek}`,
-        { headers: { Authorization: `Bearer ${user.token}` } }
-      )
-      const data = await res.json()
-      setSessions(data)
-    }
-
-    fetchUserInfo()
-    fetchActivity()
-  }, [user?.token])
-
-  // Statistiques de la semaine courante
   const weekDistance = sessions
     .reduce((sum, s) => sum + s.distance, 0)
     .toFixed(1)
@@ -109,7 +44,7 @@ const DashboardPage = () => {
     })
   }
 
-  if (!profile || !stats) {
+  if (loading || !profile || !stats) {
     return null
   }
 

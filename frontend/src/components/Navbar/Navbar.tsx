@@ -1,7 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useAppContext } from '@/context/appContext'
+import useAuth from '@/lib/useAuth'
 import {
   StyledAppBar,
   StyledToolbar,
@@ -12,13 +11,7 @@ import {
 } from './Navbar.styled'
 
 const Navbar = () => {
-  const { setUser } = useAppContext()
-  const router = useRouter()
-
-  const handleLogout = () => {
-    setUser(null)
-    router.push('/login')
-  }
+  const { logout } = useAuth()
 
   return (
     <StyledAppBar position="static">
@@ -30,7 +23,7 @@ const Navbar = () => {
           <NavLink href="/dashboard">Dashboard</NavLink>
           <NavLink href="#">Coach AI</NavLink>
           <NavLink href="/profil">Mon profil</NavLink>
-          <LogoutLink href="#" onClick={handleLogout}>
+          <LogoutLink href="#" onClick={logout}>
             Se déconnecter
           </LogoutLink>
         </NavLinks>
