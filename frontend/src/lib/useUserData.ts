@@ -49,6 +49,7 @@ const useUserData = () => {
   const [stats, setStats] = useState<UserStats | null>(null)
   const [allSessions, setAllSessions] = useState<RunningSession[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) {
@@ -56,40 +57,44 @@ const useUserData = () => {
       return
     }
 
-    const fetchOptions: RequestInit = { credentials: 'include' }
+    const fetchData = async () => {
+      const fetchOptions: RequestInit = { credentials: 'include' }
 
-    // Dates de référence : tout l'historique → dimanche courant
-    const monday = getMonday(new Date())
-    const historyStart = new Date('2024-01-01')
-    const sunday = new Date(monday)
-    sunday.setDate(monday.getDate() + 6)
+      // Dates de référence : tout l'historique → dimanche courant
+      const monday = getMonday(new Date())
+      const historyStart = new Date('2024-01-01')
+      const sunday = new Date(monday)
+      sunday.setDate(monday.getDate() + 6)
 
-    const fetchUserInfo = async () => {
-      const res = await fetch(`${API_URL}/api/user-info`, fetchOptions)
-      const data = await res.json()
-      setProfile(data.profile)
-      setStats(data.statistics)
+      const [infoRes, activityRes] = await Promise.all([
+        fetch(`${API_URL}/api/user-info`, fetchOptions),
+        fetch(
+          `${API_URL}/api/user-activity?startWeek=${formatISO(historyStart)}&endWeek=${formatISO(sunday)}`,
+          fetchOptions
+        ),
+      ])
+
+      if (!infoRes.ok) throw new Error('Erreur lors du chargement du profil')
+      if (!activityRes.ok) throw new Error('Erreur lors du chargement des activités')
+
+      const infoData = await infoRes.json()
+      const activityData = await activityRes.json()
+
+      setProfile(infoData.profile)
+      setStats(infoData.statistics)
+      setAllSessions(activityData)
     }
 
-    const fetchActivity = async () => {
-      const res = await fetch(
-        `${API_URL}/api/user-activity?startWeek=${formatISO(historyStart)}&endWeek=${formatISO(sunday)}`,
-        fetchOptions
-      )
-      const data = await res.json()
-      setAllSessions(data)
-    }
-
-    Promise.all([fetchUserInfo(), fetchActivity()]).then(() => {
-      setLoading(false)
-    })
+    fetchData()
+      .catch(() => setError('Impossible de charger les données. Vérifiez que le serveur est lancé.'))
+      .finally(() => setLoading(false))
   }, [user, router])
 
   // Semaine courante = filtrée depuis allSessions
   const currentWeekStart = formatISO(getMonday(new Date()))
   const sessions = allSessions.filter((s) => s.date >= currentWeekStart)
 
-  return { profile, stats, sessions, monthSessions: allSessions, loading }
+  return { profile, stats, sessions, monthSessions: allSessions, loading, error }
 }
 
 export default useUserData
