@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAppContext } from '@/context/appContext'
 
 export interface UserProfile {
@@ -29,6 +30,8 @@ export interface RunningSession {
   caloriesBurned: number
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 const getMonday = (date: Date) => {
   const d = new Date(date)
   const dayOfWeek = d.getDay()
@@ -41,15 +44,19 @@ const formatISO = (date: Date) => date.toISOString().split('T')[0]
 
 const useUserData = () => {
   const { user } = useAppContext()
+  const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [stats, setStats] = useState<UserStats | null>(null)
   const [allSessions, setAllSessions] = useState<RunningSession[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user?.token) return
+    if (!user) {
+      router.replace('/login')
+      return
+    }
 
-    const headers = { Authorization: `Bearer ${user.token}` }
+    const fetchOptions: RequestInit = { credentials: 'include' }
 
     // Dates de référence : tout l'historique → dimanche courant
     const monday = getMonday(new Date())
@@ -58,7 +65,7 @@ const useUserData = () => {
     sunday.setDate(monday.getDate() + 6)
 
     const fetchUserInfo = async () => {
-      const res = await fetch('http://localhost:8000/api/user-info', { headers })
+      const res = await fetch(`${API_URL}/api/user-info`, fetchOptions)
       const data = await res.json()
       setProfile(data.profile)
       setStats(data.statistics)
@@ -66,8 +73,8 @@ const useUserData = () => {
 
     const fetchActivity = async () => {
       const res = await fetch(
-        `http://localhost:8000/api/user-activity?startWeek=${formatISO(historyStart)}&endWeek=${formatISO(sunday)}`,
-        { headers }
+        `${API_URL}/api/user-activity?startWeek=${formatISO(historyStart)}&endWeek=${formatISO(sunday)}`,
+        fetchOptions
       )
       const data = await res.json()
       setAllSessions(data)
@@ -76,7 +83,7 @@ const useUserData = () => {
     Promise.all([fetchUserInfo(), fetchActivity()]).then(() => {
       setLoading(false)
     })
-  }, [user?.token])
+  }, [user, router])
 
   // Semaine courante = filtrée depuis allSessions
   const currentWeekStart = formatISO(getMonday(new Date()))

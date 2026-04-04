@@ -12,6 +12,7 @@ import {
   Legend,
 } from 'recharts'
 import { Typography } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import type { RunningSession } from '@/lib/useUserData'
 import {
   ChartHeader,
@@ -49,6 +50,7 @@ const formatLongDate = (date: Date) =>
   date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
 
 const WeeklyDistanceChart = ({ sessions }: WeeklyDistanceChartProps) => {
+  const theme = useTheme()
   const [offset, setOffset] = useState(0)
   const [hovered, setHovered] = useState(false)
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
@@ -149,13 +151,13 @@ const WeeklyDistanceChart = ({ sessions }: WeeklyDistanceChartProps) => {
               return ''
             }}
             contentStyle={{
-              backgroundColor: '#333',
+              backgroundColor: theme.palette.chart.tooltipBg,
               border: 'none',
               borderRadius: 8,
-              color: '#fff',
+              color: theme.palette.chart.tooltipText,
             }}
-            itemStyle={{ color: '#fff' }}
-            labelStyle={{ color: '#fff' }}
+            itemStyle={{ color: theme.palette.chart.tooltipText }}
+            labelStyle={{ color: theme.palette.chart.tooltipText }}
           />
           <Legend
             formatter={() => 'Km'}
@@ -168,9 +170,9 @@ const WeeklyDistanceChart = ({ sessions }: WeeklyDistanceChartProps) => {
             barSize={20}
           >
             {weeklyData.map((_, i) => {
-              let fill = '#b3b3e6'
-              if (hovered) fill = '#6666cc'
-              if (activeIndex === i) fill = '#0000ff'
+              let fill = theme.palette.chart.barDefault
+              if (hovered) fill = theme.palette.chart.barHover
+              if (activeIndex === i) fill = theme.palette.primary.main
               return <Cell key={i} fill={fill} />
             })}
           </Bar>

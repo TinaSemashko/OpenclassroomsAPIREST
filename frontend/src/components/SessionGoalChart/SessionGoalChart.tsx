@@ -29,7 +29,7 @@ const SessionGoalChart = ({ completed, goal }: SessionGoalChartProps) => {
   ]
 
   const colorDone = theme.palette.primary.main
-  const colorLeft = '#b3b3e6'
+  const colorLeft = theme.palette.primary.light
 
   return (
     <ChartWrapper>

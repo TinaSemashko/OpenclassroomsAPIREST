@@ -15,7 +15,7 @@ export const LeftPanel = styled(Box)`
   justify-content: center;
   padding: 60px;
   width: 50%;
-  background-color: #f8f8ff;
+  background-color: ${({ theme }) => theme.palette.background.default};
   ${({ theme }) => theme.breakpoints.down('md')} {
     width: 100%;
     padding: 40px 24px;
@@ -38,7 +38,7 @@ export const HeroImage = styled('img')`
 `
 
 export const FormCard = styled(Box)`
-  background: white;
+  background: ${({ theme }) => theme.palette.background.paper};
   border-radius: 12px;
   padding: 40px;
   max-width: 480px;
@@ -47,7 +47,7 @@ export const FormCard = styled(Box)`
 export const Logo = styled(Typography)`
   font-size: 28px;
   font-weight: 700;
-  color: #ff0000;
+  color: ${({ theme }) => theme.palette.error.main};
   margin-bottom: 40px;
   letter-spacing: 2px;
 `
@@ -55,7 +55,7 @@ export const Logo = styled(Typography)`
 export const Title = styled(Typography)`
   font-size: 32px;
   font-weight: 700;
-  color: #0000ff;
+  color: ${({ theme }) => theme.palette.primary.main};
   margin-bottom: 32px;
   line-height: 1.2;
 `
@@ -68,21 +68,21 @@ export const StyledTextField = styled(TextField)`
 `
 
 export const SubmitButton = styled(Button)`
-  background-color: #0000ff;
-  color: white;
+  background-color: ${({ theme }) => theme.palette.primary.main};
+  color: ${({ theme }) => theme.palette.background.paper};
   padding: 14px;
   border-radius: 8px;
   font-size: 16px;
   text-transform: none;
   margin-top: 8px;
   &:hover {
-    background-color: #0000cc;
+    background-color: ${({ theme }) => theme.palette.primary.dark};
   }
 `
 
 export const ForgotLink = styled(Typography)`
   margin-top: 16px;
-  color: #333;
+  color: ${({ theme }) => theme.palette.text.disabled};
   cursor: pointer;
   text-align: center;
   &:hover {

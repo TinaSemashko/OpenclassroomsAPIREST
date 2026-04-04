@@ -12,6 +12,7 @@ import {
   Legend,
 } from 'recharts'
 import { Typography } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import type { RunningSession } from '@/lib/useUserData'
 import {
   ChartHeader,
@@ -47,6 +48,7 @@ const mean = (arr: number[]) =>
   arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0
 
 const BpmChart = ({ sessions }: BpmChartProps) => {
+  const theme = useTheme()
   const [offset, setOffset] = useState(0)
   const [hovered, setHovered] = useState(false)
 
@@ -147,13 +149,13 @@ const BpmChart = ({ sessions }: BpmChartProps) => {
               return [`${value} bpm`, labels[String(name)] || String(name)]
             }}
             contentStyle={{
-              backgroundColor: '#333',
+              backgroundColor: theme.palette.chart.tooltipBg,
               border: 'none',
               borderRadius: 8,
-              color: '#fff',
+              color: theme.palette.chart.tooltipText,
             }}
-            itemStyle={{ color: '#fff' }}
-            labelStyle={{ color: '#fff' }}
+            itemStyle={{ color: theme.palette.chart.tooltipText }}
+            labelStyle={{ color: theme.palette.chart.tooltipText }}
           />
           <Legend
             formatter={(value: string) => {
@@ -169,14 +171,14 @@ const BpmChart = ({ sessions }: BpmChartProps) => {
           />
           <Bar
             dataKey="min"
-            fill="#f5c5b0"
+            fill={theme.palette.chart.bpmMin}
             radius={[3, 3, 0, 0]}
             barSize={10}
             activeBar={false}
           />
           <Bar
             dataKey="max"
-            fill="#e74c3c"
+            fill={theme.palette.chart.bpmMax}
             radius={[3, 3, 0, 0]}
             barSize={10}
             activeBar={false}
@@ -184,9 +186,9 @@ const BpmChart = ({ sessions }: BpmChartProps) => {
           <Line
             type="natural"
             dataKey="avg"
-            stroke={hovered ? '#0000ff' : '#d4d4e8'}
+            stroke={hovered ? theme.palette.primary.main : theme.palette.chart.lineInactive}
             strokeWidth={hovered ? 2 : 1}
-            dot={{ r: 3, fill: '#0000ff', stroke: '#0000ff', strokeWidth: 0 }}
+            dot={{ r: 3, fill: theme.palette.primary.main, stroke: theme.palette.primary.main, strokeWidth: 0 }}
             connectNulls
           />
         </ComposedChart>

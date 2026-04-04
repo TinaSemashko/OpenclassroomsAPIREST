@@ -25,7 +25,7 @@ export const Banner = styled(Box)`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #eeeeff;
+  background-color: ${({ theme }) => theme.palette.background.default};
   border-radius: ${({ theme }) => theme.shape.borderRadius}px;
   padding: 16px 24px;
   margin-bottom: 32px;

@@ -1,23 +1,22 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 
 const users = require("./data.json");
-
-const SECRET_KEY = "your-secret-key-12345"; // In a real app, this would be in environment variables
 
 const getUserById = (userId) => {
   return users.find((user) => user.id === userId);
 };
 
 const router = express.Router();
+router.use(cookieParser());
 
-const { authenticateToken, generateToken } = require("./middleware");
+const { authenticateToken, generateToken, loginRateLimiter } = require("./middleware");
 
 /**
  * POST /api/login ✅
- * Returns a token for the user
+ * Returns a token for the user (set as httpOnly cookie)
  */
-router.post("/api/login", (req, res) => {
+router.post("/api/login", loginRateLimiter, (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -33,10 +32,32 @@ router.post("/api/login", (req, res) => {
   }
 
   const token = generateToken(user.id);
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    path: "/",
+  });
+
   return res.json({
-    token,
     userId: user.id,
   });
+});
+
+/**
+ * POST /api/logout
+ * Clears the httpOnly cookie
+ */
+router.post("/api/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
+  return res.json({ message: "Logged out" });
 });
 
 /** ✅
@@ -44,9 +65,12 @@ router.post("/api/login", (req, res) => {
  * Returns user information including profile, goals, and statistics
  */
 router.get("/api/user-info", authenticateToken, (req, res) => {
-  const token = req.headers.authorization.split(" ")[1];
-  const decodedToken = jwt.verify(token, SECRET_KEY);
-  const user = getUserById(decodedToken.userId);
+  const user = getUserById(req.user.userId);
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
   const runningData = user.runningData;
 
   // Calculate overall statistics
@@ -93,7 +117,7 @@ router.get("/api/user-info", authenticateToken, (req, res) => {
  */
 router.get("/api/user-activity", authenticateToken, (req, res) => {
   const { startWeek, endWeek } = req.query;
-  
+
   if (!startWeek || !endWeek) {
     return res.status(400).json({ message: "startWeek and endWeek are required" });
   }
@@ -109,7 +133,7 @@ router.get("/api/user-activity", authenticateToken, (req, res) => {
   const startDate = new Date(startWeek);
   const endDate = new Date(endWeek);
   const now = new Date();
-  
+
   // Filter sessions between startWeek and endWeek, excluding future dates
   const filteredSessions = runningData.filter((session) => {
     const sessionDate = new Date(session.date);
@@ -117,7 +141,7 @@ router.get("/api/user-activity", authenticateToken, (req, res) => {
   });
 
   // Sort by date ascending
-  const sortedSessions = filteredSessions.sort((a, b) => 
+  const sortedSessions = filteredSessions.sort((a, b) =>
     new Date(a.date) - new Date(b.date)
   );
 

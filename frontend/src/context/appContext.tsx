@@ -3,8 +3,7 @@
 import { createContext, useContext, useState } from 'react'
 
 interface AuthUser {
-  userId: number
-  token: string
+  userId: string
 }
 
 interface AppContextType {

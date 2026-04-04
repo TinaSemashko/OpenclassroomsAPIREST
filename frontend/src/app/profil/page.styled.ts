@@ -128,7 +128,7 @@ export const StatCard = styled(Box)`
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 255, 0.3);
+    box-shadow: 0 6px 20px ${({ theme }) => theme.palette.primary.main}4d;
   }
 `
 
