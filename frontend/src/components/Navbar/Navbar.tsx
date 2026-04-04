@@ -18,7 +18,7 @@ const Navbar = () => {
   return (
     <StyledAppBar position="static">
       <StyledToolbar>
-        <LogoWrapper>
+        <LogoWrapper href="/">
           <LogoIcon />
           <LogoText>SPORTSEE</LogoText>
         </LogoWrapper>

@@ -1,5 +1,6 @@
 'use client'
 
+import { Box, CircularProgress } from '@mui/material'
 import useUserData from '@/lib/useUserData'
 import Navbar from '@/components/Navbar/Navbar'
 import Footer from '@/components/Footer/Footer'
@@ -58,7 +59,11 @@ const ProfilPage = () => {
   const { profile, stats, monthSessions, loading } = useUserData()
 
   if (loading || !profile || !stats) {
-    return null
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress />
+      </Box>
+    )
   }
 
   const { hours, minutes } = formatDuration(stats.totalDuration)

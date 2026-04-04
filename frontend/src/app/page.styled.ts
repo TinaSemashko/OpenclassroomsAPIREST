@@ -1,7 +1,7 @@
 'use client'
 
 import { styled } from '@mui/material/styles'
-import { Box, Button, TextField, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 
 export const PageWrapper = styled(Box)`
   display: flex;
@@ -37,18 +37,17 @@ export const HeroImage = styled('img')`
   object-fit: cover;
 `
 
-export const FormCard = styled(Box)`
-  background: ${({ theme }) => theme.palette.background.paper};
-  border-radius: 12px;
-  padding: 40px;
-  max-width: 480px;
+export const LogoRow = styled(Box)`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 40px;
 `
 
 export const Logo = styled(Typography)`
   font-size: 28px;
   font-weight: 700;
   color: ${({ theme }) => theme.palette.error.main};
-  margin-bottom: 40px;
   letter-spacing: 2px;
 `
 
@@ -56,36 +55,25 @@ export const Title = styled(Typography)`
   font-size: 32px;
   font-weight: 700;
   color: ${({ theme }) => theme.palette.primary.main};
-  margin-bottom: 32px;
+  margin-bottom: 16px;
   line-height: 1.2;
 `
 
-export const StyledTextField = styled(TextField)`
-  margin-bottom: 20px;
-  & .MuiOutlinedInput-root {
-    border-radius: 8px;
-  }
+export const Subtitle = styled(Typography)`
+  font-size: 16px;
+  color: ${({ theme }) => theme.palette.text.secondary};
+  margin-bottom: 32px;
+  line-height: 1.5;
 `
 
-export const SubmitButton = styled(Button)`
+export const LoginButton = styled(Button)`
   background-color: ${({ theme }) => theme.palette.primary.main};
   color: ${({ theme }) => theme.palette.background.paper};
-  padding: 14px;
+  padding: 14px 40px;
   border-radius: 8px;
   font-size: 16px;
   text-transform: none;
-  margin-top: 8px;
   &:hover {
     background-color: ${({ theme }) => theme.palette.primary.dark};
-  }
-`
-
-export const ForgotLink = styled(Typography)`
-  margin-top: 16px;
-  color: ${({ theme }) => theme.palette.text.disabled};
-  cursor: pointer;
-  text-align: center;
-  &:hover {
-    text-decoration: underline;
   }
 `

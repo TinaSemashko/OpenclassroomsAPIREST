@@ -1,5 +1,6 @@
 'use client'
 
+import { Box, CircularProgress } from '@mui/material'
 import useUserData from '@/lib/useUserData'
 import Navbar from '@/components/Navbar/Navbar'
 import WeeklyDistanceChart from '@/components/WeeklyDistanceChart/WeeklyDistanceChart'
@@ -65,7 +66,11 @@ const DashboardPage = () => {
     d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
   if (loading || !profile || !stats) {
-    return null
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress />
+      </Box>
+    )
   }
 
   return (

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Typography } from '@mui/material'
+import { CircularProgress, Typography } from '@mui/material'
 import useAuth from '@/lib/useAuth'
 import {
   PageWrapper,
@@ -19,7 +19,7 @@ import {
 const LoginPage = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const { login, error } = useAuth()
+  const { login, error, loading } = useAuth()
 
   const handleSubmit = () => {
     login(username, password)
@@ -48,8 +48,8 @@ const LoginPage = () => {
           {error && (
             <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>
           )}
-          <SubmitButton fullWidth onClick={handleSubmit}>
-            Se connecter
+          <SubmitButton fullWidth onClick={handleSubmit} disabled={loading}>
+            {loading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Se connecter'}
           </SubmitButton>
           <ForgotLink variant="body2">Mot de passe oublié ?</ForgotLink>
         </FormCard>

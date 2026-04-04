@@ -60,6 +60,14 @@ router.post("/api/logout", (req, res) => {
   return res.json({ message: "Logged out" });
 });
 
+/**
+ * GET /api/me
+ * Returns the current authenticated user's id (lightweight session check)
+ */
+router.get("/api/me", authenticateToken, (req, res) => {
+  return res.json({ userId: req.user.userId });
+});
+
 /** ✅
  * GET /api/user-info
  * Returns user information including profile, goals, and statistics

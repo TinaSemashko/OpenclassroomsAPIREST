@@ -15,10 +15,11 @@ export const StyledToolbar = styled(Toolbar)`
   padding: 8px 40px;
 `
 
-export const LogoWrapper = styled('div')`
+export const LogoWrapper = styled(Link)`
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
 `
 
 export const LogoText = styled(Typography)`

@@ -10,9 +10,11 @@ const useAuth = () => {
   const { setUser } = useAppContext()
   const router = useRouter()
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const login = async (username: string, password: string) => {
     setError('')
+    setLoading(true)
     try {
       const res = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
@@ -29,6 +31,8 @@ const useAuth = () => {
       router.push('/dashboard')
     } catch {
       setError('Erreur serveur, veuillez réessayer')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -45,7 +49,7 @@ const useAuth = () => {
     router.push('/login')
   }
 
-  return { login, logout, error }
+  return { login, logout, error, loading }
 }
 
 export default useAuth

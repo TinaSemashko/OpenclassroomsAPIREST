@@ -43,7 +43,7 @@ const getMonday = (date: Date) => {
 const formatISO = (date: Date) => date.toISOString().split('T')[0]
 
 const useUserData = () => {
-  const { user } = useAppContext()
+  const { user, sessionLoading } = useAppContext()
   const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [stats, setStats] = useState<UserStats | null>(null)
@@ -52,6 +52,8 @@ const useUserData = () => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (sessionLoading) return
+
     if (!user) {
       router.replace('/login')
       return
@@ -88,7 +90,7 @@ const useUserData = () => {
     fetchData()
       .catch(() => setError('Impossible de charger les données. Vérifiez que le serveur est lancé.'))
       .finally(() => setLoading(false))
-  }, [user, router])
+  }, [user, router, sessionLoading])
 
   // Semaine courante = filtrée depuis allSessions
   const currentWeekStart = formatISO(getMonday(new Date()))
