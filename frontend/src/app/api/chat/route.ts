@@ -4,6 +4,34 @@ import systemPrompt from './prompt.json'
 const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions'
 const MISTRAL_MODEL = 'mistral-small-latest'
 const MAX_HISTORY = 10
+const EXPRESS_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+const fetchUserContext = async (userId: string, cookie: string) => {
+  const opts: RequestInit = {
+    headers: { Cookie: cookie },
+  }
+
+  const [infoRes, activityRes] = await Promise.all([
+    fetch(`${EXPRESS_API}/api/user-info`, opts),
+    fetch(`${EXPRESS_API}/api/user-activity?startWeek=2024-01-01&endWeek=2099-12-31`, opts),
+  ])
+
+  if (!infoRes.ok || !activityRes.ok) return null
+
+  const info = await infoRes.json()
+  const sessions = await activityRes.json()
+
+  const profile = info.profile
+  const recent = sessions.slice(-10)
+
+  return [
+    `Profil: ${profile.firstName}, ${profile.age} ans, ${profile.weight}kg, ${profile.height}cm.`,
+    `Sessions récentes (${recent.length}):`,
+    ...recent.map((s: { date: string; distance: number; duration: number; heartRate: { average: number } }) =>
+      `- ${s.date}: ${s.distance}km, ${s.duration}min, FC moy ${s.heartRate.average}bpm`
+    ),
+  ].join('\n')
+}
 
 export const POST = async (req: NextRequest) => {
   const apiKey = process.env.MISTRAL_API_KEY
@@ -14,6 +42,8 @@ export const POST = async (req: NextRequest) => {
       { status: 500 }
     )
   }
+
+  const cookie = req.headers.get('cookie') ?? ''
 
   const body = await req.json()
   const { messages } = body
@@ -49,6 +79,12 @@ export const POST = async (req: NextRequest) => {
   }))
 
   try {
+    // Fetch user data from Express to enrich the prompt
+    const userContext = await fetchUserContext('', cookie)
+    const systemMessage = userContext
+      ? { ...systemPrompt, content: `${systemPrompt.content}\n\nDonnées de l'utilisateur :\n${userContext}` }
+      : systemPrompt
+
     console.log('[chat] Sending request to Mistral')
 
     const response = await fetch(MISTRAL_API_URL, {
@@ -60,7 +96,7 @@ export const POST = async (req: NextRequest) => {
       body: JSON.stringify({
         model: MISTRAL_MODEL,
         messages: [
-          systemPrompt,
+          systemMessage,
           ...history,
         ],
       }),
