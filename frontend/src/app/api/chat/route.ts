@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import systemPrompt from './prompt.json'
 
 const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions'
 const MISTRAL_MODEL = 'mistral-small-latest'
+const MAX_HISTORY = 10
 
 export const POST = async (req: NextRequest) => {
   const apiKey = process.env.MISTRAL_API_KEY
@@ -14,25 +16,37 @@ export const POST = async (req: NextRequest) => {
   }
 
   const body = await req.json()
-  const { message } = body
+  const { messages } = body
 
-  // Validate input
-  if (!message || typeof message !== 'string' || message.trim().length === 0) {
+  // Validate: messages must be a non-empty array
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return NextResponse.json(
+      { error: 'Les messages sont requis' },
+      { status: 400 }
+    )
+  }
+
+  // Validate last message
+  const last = messages[messages.length - 1]
+  if (!last?.content || typeof last.content !== 'string' || last.content.trim().length === 0) {
     return NextResponse.json(
       { error: 'Le message est requis' },
       { status: 400 }
     )
   }
 
-  if (message.length > 2000) {
+  if (last.content.length > 2000) {
     return NextResponse.json(
       { error: 'Le message est trop long (max 2000 caractères)' },
       { status: 400 }
     )
   }
 
-  // Sanitize: strip HTML tags
-  const sanitized = message.trim().replace(/<[^>]*>/g, '')
+  // Keep only the last N messages and sanitize
+  const history = messages.slice(-MAX_HISTORY).map((msg: { role: string; content: string }) => ({
+    role: msg.role,
+    content: msg.content.replace(/<[^>]*>/g, ''),
+  }))
 
   try {
     console.log('[chat] Sending request to Mistral')
@@ -46,7 +60,8 @@ export const POST = async (req: NextRequest) => {
       body: JSON.stringify({
         model: MISTRAL_MODEL,
         messages: [
-          { role: 'user', content: sanitized },
+          systemPrompt,
+          ...history,
         ],
       }),
       signal: AbortSignal.timeout(15000),

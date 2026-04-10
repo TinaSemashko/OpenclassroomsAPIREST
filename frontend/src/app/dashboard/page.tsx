@@ -1,7 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import { Box, CircularProgress } from '@mui/material'
 import useUserData from '@/lib/useUserData'
+import ChatModal from '@/components/ChatModal/ChatModal'
 import Navbar from '@/components/Navbar/Navbar'
 import WeeklyDistanceChart from '@/components/WeeklyDistanceChart/WeeklyDistanceChart'
 import BpmChart from '@/components/BpmChart/BpmChart'
@@ -37,6 +39,7 @@ import {
 
 const DashboardPage = () => {
   const { profile, stats, sessions, monthSessions, loading } = useUserData()
+  const [chatOpen, setChatOpen] = useState(false)
 
   const weekDistance = sessions
     .reduce((sum, s) => sum + s.distance, 0)
@@ -75,7 +78,7 @@ const DashboardPage = () => {
 
   return (
     <PageWrapper>
-      <Navbar />
+      <Navbar onChatOpen={() => setChatOpen(true)} />
       <Content>
         {/* ---- Banniere Coach AI ---- */}
         <Banner>
@@ -83,7 +86,7 @@ const DashboardPage = () => {
             Posez vos questions sur votre programme, vos performances ou vos
             objectifs.
           </BannerText>
-          <BannerButton>Lancer une conversation</BannerButton>
+          <BannerButton onClick={() => setChatOpen(true)}>Lancer une conversation</BannerButton>
         </Banner>
 
         {/* ---- Carte profil ---- */}
@@ -147,6 +150,7 @@ const DashboardPage = () => {
         </WeekRow>
       </Content>
       <Footer />
+      <ChatModal open={chatOpen} onClose={() => setChatOpen(false)} />
     </PageWrapper>
   )
 }

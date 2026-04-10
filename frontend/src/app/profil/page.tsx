@@ -1,8 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { Box, CircularProgress } from '@mui/material'
 import useUserData from '@/lib/useUserData'
 import Navbar from '@/components/Navbar/Navbar'
+import ChatModal from '@/components/ChatModal/ChatModal'
 import Footer from '@/components/Footer/Footer'
 import {
   PageWrapper,
@@ -57,6 +59,7 @@ const formatHeight = (cm: number) => {
 
 const ProfilPage = () => {
   const { profile, stats, monthSessions, loading } = useUserData()
+  const [chatOpen, setChatOpen] = useState(false)
 
   if (loading || !profile || !stats) {
     return (
@@ -76,7 +79,7 @@ const ProfilPage = () => {
 
   return (
     <PageWrapper>
-      <Navbar />
+      <Navbar onChatOpen={() => setChatOpen(true)} />
       <Content>
         <LeftColumn>
           <ProfileCard>
@@ -145,6 +148,7 @@ const ProfilPage = () => {
         </RightColumn>
       </Content>
       <Footer />
+      <ChatModal open={chatOpen} onClose={() => setChatOpen(false)} />
     </PageWrapper>
   )
 }

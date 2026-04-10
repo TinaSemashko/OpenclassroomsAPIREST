@@ -12,7 +12,11 @@ import {
   LogoutLink,
 } from './Navbar.styled'
 
-const Navbar = () => {
+interface NavbarProps {
+  onChatOpen?: () => void
+}
+
+const Navbar = ({ onChatOpen }: NavbarProps) => {
   const { logout } = useAuth()
 
   return (
@@ -24,7 +28,15 @@ const Navbar = () => {
         </LogoWrapper>
         <NavLinks>
           <NavLink href="/dashboard">Dashboard</NavLink>
-          <NavLink href="#">Coach AI</NavLink>
+          <NavLink
+            href="#"
+            onClick={(e: React.MouseEvent) => {
+              e.preventDefault()
+              onChatOpen?.()
+            }}
+          >
+            Coach AI
+          </NavLink>
           <NavLink href="/profil">Mon profil</NavLink>
           <LogoutLink
             href="#"
